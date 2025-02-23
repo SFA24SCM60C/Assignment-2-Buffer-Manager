@@ -1,0 +1,105 @@
+# Buffer Manager Implementation - CS525 Advanced Database Organization
+
+## Overview
+
+This documentation provides an explanation of the Buffer Manager assignment, detailing its functionality, structure, and individual source files. The assignment aims to implement a buffer manager that efficiently manages a fixed number of pages in memory, following replacement strategies like FIFO and LRU.
+
+## 1. Task Summary
+
+The Buffer Manager is responsible for managing memory pages (frames) loaded from a page file. It supports multiple buffer pools but ensures only one buffer pool per page file. It implements:
+
+- Pinning and unpinning pages to track usage.
+- Replacement strategies (FIFO, LRU, CLOCK, LFU, LRU-K) to manage frame eviction.
+- Tracking dirty pages and writing them back to disk when necessary.
+- Handling buffer pool statistics such as fix counts, read I/O, and write I/O.
+
+## 2. Core Functionalities
+
+The buffer manager operates based on the following key functionalities:
+
+- **Pinning a page:** Checks if the requested page is already in memory; if not, loads it into a frame using the replacement strategy.
+- **Unpinning a page:** Decreases the fix count, allowing eviction if necessary.
+- **Marking a page as dirty:** Indicates that a modified page should be written to disk before replacement.
+- **Flushing pages:** Writes dirty pages back to disk when required.
+
+## 3. Source Code Structure
+
+The provided source files implement the buffer manager and associated components. Below is a breakdown:
+
+### Header Files
+
+- **buffer_mgr.h:** Defines core data structures and function prototypes for buffer management, including:
+  - `BM_BufferPool`: Represents a buffer pool with page frames.
+  - `BM_PageHandle`: Holds page metadata.
+  - Replacement strategy enumeration (FIFO, LRU, CLOCK, LFU, LRU-K).
+  - Function declarations for buffer pool and page management:
+    - `initBufferPool()`, `shutdownBufferPool()`, `forceFlushPool()`
+    - `pinPage()`, `unpinPage()`, `markDirty()`, `forcePage()`
+  - Functions for tracking frame contents, dirty flags, and I/O operations.
+
+- **buffer_mgr_stat.h:** Provides helper functions to print buffer pool and page contents:
+  - `printPoolContent(BM_BufferPool *const bm)`: Prints buffer pool status, including page frames, dirty flags, and fix counts.
+  - `printPageContent(BM_PageHandle *const page)`: Displays a page's hexadecimal data representation.
+  - `sprintPoolContent(BM_BufferPool *const bm)`: Returns a string representation of the buffer pool content.
+  - `sprintPageContent(BM_PageHandle *const page)`: Returns a formatted string of a page's content.
+
+- **dberror.h:** Defines error codes and handling functions:
+  - Error codes for file handling, buffer management, record management, and index management.
+  - `printError(RC error)`: Prints error messages based on return codes.
+  - `errorMessage(RC error)`: Returns a formatted error message string.
+  - `THROW(rc, message)`: Macro to assign an error message and return an error code.
+  - `CHECK(code)`: Macro to verify return codes and exit on errors.
+
+- **dt.h:** Defines data types such as bool and PageNumber.
+
+- **storage_mgr.h:** Defines storage management functions and structures.
+
+- **test_helper.h:** Provides test utility macros.
+
+### Implementation Files
+
+- **buffer_mgr.c:** Implements the buffer manager functions and page replacement strategies.
+- **buffer_mgr_stat.c:** Implements helper functions for debugging and statistics output.
+- **dberror.c:** Implements error handling functions.
+- **storage_mgr.c:** Implements file storage and page management functions.
+- **test_assign2_1.c:** Implements test cases for FIFO and LRU replacement strategies.
+- **test_assign2_2.c:** Implements test cases for CLOCK and LFU replacement strategies:
+  - `testCreatingAndReadingDummyPages()`: Verifies page creation and reading.
+  - `testReadPage()`: Tests the functionality of reading pages.
+  - `testClock()`: Evaluates the CLOCK page replacement strategy.
+  - `testLFU()`: Evaluates the LFU page replacement strategy.
+  - Uses macros like `ASSERT_EQUALS_POOL()` to validate buffer pool states.
+
+- **Makefile:** Defines compilation rules for building the project and generating test binaries.
+
+## 4. Testing and Validation
+
+- **Test Cases:** The `test_assign2_2.c` file tests CLOCK and LFU strategies, buffer pool operations, and correctness of fix counts and page writes.
+- **Debugging Tools:** The provided `buffer_mgr_stat.h` functions assist in printing buffer state for verification.
+
+## 5. Additional Features
+
+- **Thread Safety:** Implementing thread safety in buffer pool functions for concurrency.
+- **Alternative Replacement Strategies:** CLOCK and LRU-K for enhanced buffer management.
+
+## 6. How to Execute the Buffer Manager
+
+To build and run tests:
+
+```bash
+make test
+```
+This will compile the code and execute all the test cases.
+
+- **To clean build artifacts:**
+```bash
+make clean
+```
+## 7. Execution Video
+
+For a demonstration of the Buffer Manager in action, you can view the execution video [here](https://vimeo.com/1059362045/f262a8bb11?ts=0&share=copy).
+
+## ð Requirements
+- **GCC compiler** (tested with `gcc 11.4.0`)  
+- **Make** (for building)  
+- **POSIX-compliant OS** (Linux/macOS)  
